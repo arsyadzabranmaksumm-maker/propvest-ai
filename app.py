@@ -2,20 +2,8 @@ import os
 import base64
 import streamlit as st
 import pandas as pd
-import joblib
+from sklearn.ensemble import RandomForestRegressor
 import streamlit.components.v1 as components
-
-# Pastikan direktori models ada
-os.makedirs('models', exist_ok=True)
-model_path = 'models/model_properti.pkl'
-col_path = 'models/model_columns.pkl'
-
-# Otomatis jalankan training jika file model/kolom belum ada di cloud
-if not os.path.exists(model_path) or not os.path.exists(col_path):
-    try:
-        import train
-    except Exception as e:
-        st.error(f"Gagal melakukan training otomatis: {e}")
 
 # Konfigurasi Halaman
 st.set_page_config(
@@ -71,13 +59,32 @@ icon_db = '<ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.6
 icon_bolt = '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>'
 icon_doc = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>'
 
-# Muat Model Machine Learning & Kolom Acuan
-if os.path.exists(model_path) and os.path.exists(col_path):
-    model = joblib.load(model_path)
-    model_columns = joblib.load(col_path)
-else:
-    st.error("⬡ [CRITICAL] File model atau kolom gagal dimuat.")
-    st.stop()
+# Training Model Langsung di Dalam Cache (Tanpa File .pkl Eksternal)
+@st.cache_resource
+def get_trained_model():
+    data = {
+        'luas_tanah': [100, 150, 200, 120, 300, 80, 250, 180, 220, 130],
+        'luas_bangunan': [80, 120, 160, 90, 250, 60, 200, 140, 180, 100],
+        'jumlah_kamar': [2, 3, 4, 3, 5, 2, 4, 3, 4, 3],
+        'jumlah_lantai': [1, 2, 2, 1, 3, 1, 2, 2, 2, 1],
+        'jumlah_garasi': [1, 1, 2, 1, 2, 0, 2, 1, 2, 1],
+        'usia_bangunan': [5, 2, 1, 10, 0, 15, 3, 4, 2, 8],
+        'jarak_ke_tol': [5.0, 2.0, 1.5, 4.0, 0.5, 7.0, 2.5, 3.0, 1.0, 6.0],
+        'daerah': ['BSD City', 'Jakarta Selatan', 'Jakarta Pusat', 'Depok', 'Jakarta Selatan', 'Bogor', 'BSD City', 'Bekasi', 'Jakarta Pusat', 'Depok'],
+        'kondisi': ['Siap Huni', 'Baru Renovasi', 'Siap Huni', 'Perlu Renovasi', 'Baru Renovasi', 'Perlu Renovasi', 'Siap Huni', 'Siap Huni', 'Baru Renovasi', 'Perlu Renovasi'],
+        'keamanan': ['Ya', 'Ya', 'Ya', 'Tidak', 'Ya', 'Tidak', 'Ya', 'Ya', 'Ya', 'Tidak'],
+        'harga': [850000000, 1500000000, 2400000000, 600000000, 4500000000, 400000000, 1900000000, 950000000, 2100000000, 700000000]
+    }
+    df = pd.DataFrame(data)
+    X_raw = df.drop('harga', axis=1)
+    X = pd.get_dummies(X_raw)
+    y = df['harga']
+    
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X, y)
+    return model, X.columns.tolist()
+
+model, model_columns = get_trained_model()
 
 # Sidebar / Panel Konfigurasi Sesi
 with st.sidebar:
