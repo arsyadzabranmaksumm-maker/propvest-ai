@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="PropVest AI - Automated Valuation", page_icon="⬡", layout="wide"
 )
 
-# Fungsi untuk memuat background & mengunci gaya CSS universal
+# Fungsi untuk memuat background, CSS, dan Skrip Paksa Warna Tombol
 def set_background(image_file):
   if os.path.exists(image_file):
     with open(image_file, "rb") as f:
@@ -42,21 +42,7 @@ def set_background(image_file):
                 font-weight: 600 !important;
             }}
             
-            /* Paksa SEMUA tombol Streamlit menjadi gelap bergradasi biru dengan teks putih terang */
-            .stButton > button, div.stButton > button, [data-testid="baseButton-secondary"], [data-testid="baseButton-primary"] {{
-                background: #1d4ed8 !important;
-                background-color: #1d4ed8 !important;
-                color: #ffffff !important;
-                border: 2px solid #60a5fa !important;
-                font-weight: 700 !important;
-                width: 100% !important;
-                opacity: 1 !important;
-            }}
-            .stButton > button *, div.stButton > button * {{
-                color: #ffffff !important;
-            }}
-            
-            /* Wadah khusus untuk Hasil Analisis agar teksnya dijamin kontras (latar belakang putih terang) */
+            /* Wadah khusus untuk Hasil Analisis (latar belakang putih terang agar kontras) */
             .hasil-analisis-box {{
                 background-color: #ffffff !important;
                 padding: 25px;
@@ -70,6 +56,27 @@ def set_background(image_file):
                 color: #0f172a !important;
             }}
             </style>
+
+            <!-- Skrip JavaScript untuk memaksa tombol berubah warna di PC Sekolah -->
+            <script>
+            function forceDarkButtons() {{
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(btn => {{
+                    btn.style.setProperty('background-color', '#1d4ed8', 'important');
+                    btn.style.setProperty('background-image', 'none', 'important');
+                    btn.style.setProperty('color', '#ffffff', 'important');
+                    btn.style.setProperty('border', '2px solid #60a5fa', 'important');
+                    btn.style.setProperty('font-weight', '700', 'important');
+                    
+                    // Paksa semua elemen teks di dalam tombol ikut jadi putih
+                    const innerElements = btn.querySelectorAll('*');
+                    innerElements.forEach(el => {{
+                        el.style.setProperty('color', '#ffffff', 'important');
+                    }});
+                }});
+            }}
+            setInterval(forceDarkButtons, 500);
+            </script>
             """,
         unsafe_allow_html=True,
     )
@@ -234,7 +241,7 @@ if submit_btn:
         st.markdown("---")
         render_header("Hasil Analisis Valuasi Pasar", icon_bolt, 22)
         
-        # Bungkus hasil analisis dalam card/box khusus berlatar putih terang agar aman di PC sekolah
+        # Bungkus hasil analisis dalam card/box khusus berlatar putih terang
         st.markdown(
             f"""
             <div class="hasil-analisis-box">
