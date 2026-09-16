@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="PropVest AI - Automated Valuation", page_icon="⬡", layout="wide"
 )
 
-# Fungsi untuk memuat background & mengunci gaya CSS
+# Fungsi untuk memuat background & mengunci gaya CSS tombol
 def set_background(image_file):
   if os.path.exists(image_file):
     with open(image_file, "rb") as f:
@@ -56,14 +56,31 @@ def set_background(image_file):
                 color: #0f172a !important;
             }}
             
-            /* Mengubah tombol Keluar menjadi warna merah terang */
-            div[data-testid="stSidebar"] button:last-of-type {{
-                background-color: #dc2626 !important;
+            /* PAKSA TOMBOL MASUK (Form Submit di Sidebar) MENJADI BIRU */
+            [data-testid="stSidebar"] [data-testid="stFormSubmitButton"] > button {{
+                background-color: #2563eb !important;
+                background-image: none !important;
                 color: #ffffff !important;
-                border: 2px solid #f87171 !important;
+                border: 2px solid #60a5fa !important;
                 font-weight: 700 !important;
+                opacity: 1 !important;
+                width: 100% !important;
             }}
-            div[data-testid="stSidebar"] button:last-of-type * {{
+            [data-testid="stSidebar"] [data-testid="stFormSubmitButton"] > button * {{
+                color: #ffffff !important;
+            }}
+
+            /* PAKSA TOMBOL KELUAR MENJADI BIRU */
+            [data-testid="stSidebar"] div.stButton > button {{
+                background-color: #2563eb !important;
+                background-image: none !important;
+                color: #ffffff !important;
+                border: 2px solid #60a5fa !important;
+                font-weight: 700 !important;
+                opacity: 1 !important;
+                width: 100% !important;
+            }}
+            [data-testid="stSidebar"] div.stButton > button * {{
                 color: #ffffff !important;
             }}
             </style>
@@ -253,3 +270,4 @@ if submit_btn:
             
     except Exception as e:
         st.error(f"⬡ [ERROR] Terjadi kesalahan kalkulasi: {e}")
+    
