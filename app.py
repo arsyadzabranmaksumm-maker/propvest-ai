@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="PropVest AI - Automated Valuation", page_icon="⬡", layout="wide"
 )
 
-# Fungsi untuk memuat background gambar lokal & mengunci warna teks agar kontras di PC manapun
+# Fungsi untuk memuat background & mengunci gaya CSS
 def set_background(image_file):
   if os.path.exists(image_file):
     with open(image_file, "rb") as f:
@@ -26,23 +26,29 @@ def set_background(image_file):
                 background-repeat: no-repeat;
             }}
             
-            /* Mengunci warna Sidebar agar selalu gelap dan teksnya putih */
+            /* Mengunci Sidebar agar tetap gelap pekat */
             [data-testid="stSidebar"] {{
                 background-color: #111827 !important;
             }}
+            
+            /* Memaksa semua teks label & paragraf menjadi putih terang */
             [data-testid="stSidebar"] label, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] div {{
                 color: #ffffff !important;
             }}
-            
-            /* Memaksa semua label input teks di halaman utama menjadi putih terang */
             .stTextInput label, .stNumberInput label, .stSelectbox label {{
                 color: #ffffff !important;
                 font-weight: 600 !important;
             }}
             
-            /* Teks umum di area utama */
-            p, span, label {{
-                color: #f3f4f6;
+            /* Paksa tombol form agar selalu memiliki latar belakang gelap dan teks putih */
+            button[kind="secondaryFormSubmit"], button[kind="formSubmit"] {{
+                background-color: #1e3a8a !important;
+                background-image: none !important;
+                color: #ffffff !important;
+                border: 1px solid #3b82f6 !important;
+            }}
+            button[kind="secondaryFormSubmit"] p, button[kind="formSubmit"] p, button[kind="secondaryFormSubmit"] span, button[kind="formSubmit"] span {{
+                color: #ffffff !important;
             }}
             </style>
             """,
