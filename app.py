@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="PropVest AI - Automated Valuation", page_icon="⬡", layout="wide"
 )
 
-# Fungsi untuk memuat background gambar lokal dengan efek gelap & paksa label jadi putih
+# Fungsi untuk memuat background gambar lokal & mengunci warna teks agar kontras di PC manapun
 def set_background(image_file):
   if os.path.exists(image_file):
     with open(image_file, "rb") as f:
@@ -18,15 +18,31 @@ def set_background(image_file):
     st.markdown(
         f"""
             <style>
+            /* Background Utama */
             .stApp {{
                 background-image: linear-gradient(rgba(0, 0, 0, 0.80), rgba(0, 0, 0, 0.80)), url("data:image/jpeg;base64,{encoded_string}");
                 background-size: cover;
                 background-position: center;
                 background-repeat: no-repeat;
             }}
-            /* Memaksa semua label teks form menjadi putih terang agar jelas dibaca */
-            label, .stTextInput label, .stNumberInput label, .stSelectbox label, p, span {{
+            
+            /* Mengunci warna Sidebar agar selalu gelap dan teksnya putih */
+            [data-testid="stSidebar"] {{
+                background-color: #111827 !important;
+            }}
+            [data-testid="stSidebar"] label, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] div {{
                 color: #ffffff !important;
+            }}
+            
+            /* Memaksa semua label input teks di halaman utama menjadi putih terang */
+            .stTextInput label, .stNumberInput label, .stSelectbox label {{
+                color: #ffffff !important;
+                font-weight: 600 !important;
+            }}
+            
+            /* Teks umum di area utama */
+            p, span, label {{
+                color: #f3f4f6;
             }}
             </style>
             """,
