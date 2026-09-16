@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="PropVest AI - Automated Valuation", page_icon="⬡", layout="wide"
 )
 
-# Fungsi untuk memuat background & mengunci gaya CSS universal untuk SEMUA jenis tombol
+# Fungsi untuk memuat background & mengunci gaya CSS
 def set_background(image_file):
   if os.path.exists(image_file):
     with open(image_file, "rb") as f:
@@ -42,19 +42,6 @@ def set_background(image_file):
                 font-weight: 600 !important;
             }}
             
-            /* Paksa SEMUA tombol Streamlit (Normal & Form Submit) menjadi biru gelap berteks putih */
-            .stButton > button, [data-testid="stFormSubmitButton"] > button, button {{
-                background-color: #1d4ed8 !important;
-                background-image: none !important;
-                color: #ffffff !important;
-                border: 2px solid #60a5fa !important;
-                font-weight: 700 !important;
-                opacity: 1 !important;
-            }}
-            .stButton > button *, [data-testid="stFormSubmitButton"] > button *, button * {{
-                color: #ffffff !important;
-            }}
-            
             /* Wadah khusus untuk Hasil Analisis (latar belakang putih terang agar kontras) */
             .hasil-analisis-box {{
                 background-color: #ffffff !important;
@@ -69,25 +56,14 @@ def set_background(image_file):
                 color: #0f172a !important;
             }}
             
-            /* Tombol kustom HTML anti-putih untuk Keluar */
-            .custom-btn {{
-                display: block;
-                width: 100%;
+            /* Mengubah tombol Keluar menjadi warna merah terang */
+            div[data-testid="stSidebar"] button:last-of-type {{
                 background-color: #dc2626 !important;
                 color: #ffffff !important;
-                text-align: center;
-                padding: 10px 15px;
-                border-radius: 8px;
                 border: 2px solid #f87171 !important;
                 font-weight: 700 !important;
-                font-family: sans-serif;
-                text-decoration: none;
-                cursor: pointer;
-                box-sizing: border-box;
-                margin-top: 10px;
             }}
-            .custom-btn:hover {{
-                background-color: #b91c1c !important;
+            div[data-testid="stSidebar"] button:last-of-type * {{
                 color: #ffffff !important;
             }}
             </style>
@@ -186,13 +162,9 @@ with st.sidebar:
         st.text_input("Nama", value=st.session_state.user_name, disabled=True, label_visibility="collapsed")
         
         st.markdown("")
-        # Tombol Keluar menggunakan komponen HTML murni berwarna merah terang
-        logout_html = """
-        <a href="?" target="_self" class="custom-btn">
-            Keluar / Ganti Akun ──►
-        </a>
-        """
-        components.html(logout_html, height=50, scrolling=False)
+        if st.button("Keluar / Ganti Akun"):
+            st.session_state.logged_in = False
+            st.rerun()
             
     st.markdown("---")
     render_header("Status Koneksi DB", icon_db, 20)
