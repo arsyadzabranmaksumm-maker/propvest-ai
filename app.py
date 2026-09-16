@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="PropVest AI - Automated Valuation", page_icon="⬡", layout="wide"
 )
 
-# Fungsi untuk memuat background & mengunci gaya CSS
+# Fungsi untuk memuat background & mengunci gaya CSS universal untuk SEMUA jenis tombol
 def set_background(image_file):
   if os.path.exists(image_file):
     with open(image_file, "rb") as f:
@@ -42,6 +42,19 @@ def set_background(image_file):
                 font-weight: 600 !important;
             }}
             
+            /* Paksa SEMUA tombol Streamlit (Normal & Form Submit) menjadi biru gelap berteks putih */
+            .stButton > button, [data-testid="stFormSubmitButton"] > button, button {{
+                background-color: #1d4ed8 !important;
+                background-image: none !important;
+                color: #ffffff !important;
+                border: 2px solid #60a5fa !important;
+                font-weight: 700 !important;
+                opacity: 1 !important;
+            }}
+            .stButton > button *, [data-testid="stFormSubmitButton"] > button *, button * {{
+                color: #ffffff !important;
+            }}
+            
             /* Wadah khusus untuk Hasil Analisis (latar belakang putih terang agar kontras) */
             .hasil-analisis-box {{
                 background-color: #ffffff !important;
@@ -56,16 +69,16 @@ def set_background(image_file):
                 color: #0f172a !important;
             }}
             
-            /* Tombol kustom HTML anti-putih */
+            /* Tombol kustom HTML anti-putih untuk Keluar */
             .custom-btn {{
                 display: block;
                 width: 100%;
-                background-color: #1d4ed8 !important;
+                background-color: #dc2626 !important;
                 color: #ffffff !important;
                 text-align: center;
-                padding: 12px 20px;
+                padding: 10px 15px;
                 border-radius: 8px;
-                border: 2px solid #60a5fa !important;
+                border: 2px solid #f87171 !important;
                 font-weight: 700 !important;
                 font-family: sans-serif;
                 text-decoration: none;
@@ -74,7 +87,7 @@ def set_background(image_file):
                 margin-top: 10px;
             }}
             .custom-btn:hover {{
-                background-color: #2563eb !important;
+                background-color: #b91c1c !important;
                 color: #ffffff !important;
             }}
             </style>
@@ -137,14 +150,11 @@ def get_trained_model():
 
 model, model_columns = get_trained_model()
 
-# Inisialisasi Session State
+# Inisialisasi Session State untuk Login Sederhana
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.user_name = ""
     st.session_state.user_email = ""
-
-if "trigger_calc" not in st.session_state:
-    st.session_state.trigger_calc = False
 
 # Sidebar / Panel Konfigurasi Sesi
 with st.sidebar:
@@ -153,20 +163,20 @@ with st.sidebar:
     render_header("Identitas Pengguna", icon_gear, 20)
     
     if not st.session_state.logged_in:
-        st.write("Silakan isi identitas Anda untuk mulai:")
-        input_nama = st.text_input("Nama Anda", key="input_nama")
-        input_email = st.text_input("Email Anda", key="input_email")
-        
-        st.markdown("")
-        # Tombol Masuk menggunakan HTML murni agar tidak terpengaruh tema browser
-        if st.button("Masuk Sesi (Klik di sini)", key="btn_login_dummy"):
-            if st.session_state.get("input_nama") and st.session_state.get("input_email"):
-                st.session_state.logged_in = True
-                st.session_state.user_name = st.session_state.input_nama
-                st.session_state.user_email = st.session_state.input_email
-                st.rerun()
-            else:
-                st.warning("Mohon isi Nama dan Email.")
+        with st.form("form_login"):
+            st.write("Silakan isi identitas Anda untuk mulai:")
+            input_nama = st.text_input("Nama Anda")
+            input_email = st.text_input("Email Anda")
+            btn_masuk = st.form_submit_button("Masuk Sesi ──►")
+            
+            if btn_masuk:
+                if input_nama and input_email:
+                    st.session_state.logged_in = True
+                    st.session_state.user_name = input_nama
+                    st.session_state.user_email = input_email
+                    st.rerun()
+                else:
+                    st.warning("Mohon isi Nama dan Email.")
         st.stop()
     else:
         st.text("Email Pengguna")
@@ -176,13 +186,13 @@ with st.sidebar:
         st.text_input("Nama", value=st.session_state.user_name, disabled=True, label_visibility="collapsed")
         
         st.markdown("")
-        # Tombol Keluar menggunakan HTML Komponen agar styling-nya terkunci mutlak berwarna biru terang
+        # Tombol Keluar menggunakan komponen HTML murni berwarna merah terang
         logout_html = """
-        <a href="?" target="_self" class="custom-btn" style="background-color: #dc2626 !important; border-color: #f87171 !important;">
+        <a href="?" target="_self" class="custom-btn">
             Keluar / Ganti Akun ──►
         </a>
         """
-        components.html(logout_html, height=55, scrolling=False)
+        components.html(logout_html, height=50, scrolling=False)
             
     st.markdown("---")
     render_header("Status Koneksi DB", icon_db, 20)
@@ -197,38 +207,36 @@ with st.sidebar:
     st.markdown("---")
     st.caption("PropTech Valuation Engine v2.8 Secured")
 
-# Tampilan Utama (Form Input Spesifikasi Properti tanpa st.form agar lebih fleksibel)
-render_header("Parameter Spesifikasi Properti", icon_doc, 22)
-st.markdown("---")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    luas_tanah = st.number_input("Luas Tanah (m²)", min_value=10, max_value=5000, value=120, step=10, key="lt")
-    luas_bangunan = st.number_input("Luas Bangunan (m²)", min_value=10, max_value=4000, value=90, step=10, key="lb")
-    jumlah_kamar = st.number_input("Jumlah Kamar Tidur", min_value=1, max_value=20, value=3, step=1, key="jk")
-    jumlah_lantai = st.number_input("Jumlah Lantai", min_value=1, max_value=5, value=2, step=1, key="jl")
+# Tampilan Utama (Form Input Spesifikasi Properti)
+with st.form("form_valuasi_properti"):
+    render_header("Parameter Spesifikasi Properti", icon_doc, 22)
+    st.markdown("---")
     
-with col2:
-    jumlah_garasi = st.number_input("Kapasitas Garasi/Carport", min_value=0, max_value=10, value=1, step=1, key="jg")
-    usia_bangunan = st.number_input("Usia Bangunan (Tahun)", min_value=0, max_value=50, value=2, step=1, key="ub")
-    jarak_ke_tol = st.number_input("Jarak ke Pintu Tol (km)", min_value=0.0, max_value=50.0, value=3.0, step=0.1, key="jt")
-    daerah = st.selectbox("Wilayah / Daerah", ['BSD City', 'Jakarta Selatan', 'Jakarta Pusat', 'Depok', 'Bogor', 'Bekasi'], key="daerah")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        luas_tanah = st.number_input("Luas Tanah (m²)", min_value=10, max_value=5000, value=120, step=10, key="lt")
+        luas_bangunan = st.number_input("Luas Bangunan (m²)", min_value=10, max_value=4000, value=90, step=10, key="lb")
+        jumlah_kamar = st.number_input("Jumlah Kamar Tidur", min_value=1, max_value=20, value=3, step=1, key="jk")
+        jumlah_lantai = st.number_input("Jumlah Lantai", min_value=1, max_value=5, value=2, step=1, key="jl")
+        
+    with col2:
+        jumlah_garasi = st.number_input("Kapasitas Garasi/Carport", min_value=0, max_value=10, value=1, step=1, key="jg")
+        usia_bangunan = st.number_input("Usia Bangunan (Tahun)", min_value=0, max_value=50, value=2, step=1, key="ub")
+        jarak_ke_tol = st.number_input("Jarak ke Pintu Tol (km)", min_value=0.0, max_value=50.0, value=3.0, step=0.1, key="jt")
+        daerah = st.selectbox("Wilayah / Daerah", ['BSD City', 'Jakarta Selatan', 'Jakarta Pusat', 'Depok', 'Bogor', 'Bekasi'], key="daerah")
 
-col_sub1, col_sub2 = st.columns(2)
-with col_sub1:
-    kondisi = st.selectbox("Kondisi Fisik Bangunan", ['Siap Huni', 'Baru Renovasi', 'Perlu Renovasi'], key="kondisi")
-with col_sub2:
-    keamanan = st.selectbox("Keamanan Komplek", ['Ya', 'Tidak'], key="keamanan")
+    col_sub1, col_sub2 = st.columns(2)
+    with col_sub1:
+        kondisi = st.selectbox("Kondisi Fisik Bangunan", ['Siap Huni', 'Baru Renovasi', 'Perlu Renovasi'], key="kondisi")
+    with col_sub2:
+        keamanan = st.selectbox("Keamanan Komplek", ['Ya', 'Tidak'], key="keamanan")
 
-st.markdown("")
-
-# Tombol Hitung menggunakan Streamlit standar yang warnanya sudah dipaksa lewat CSS utama
-if st.button("HITUNG ESTIMASI NILAI PROPERTI ──►", use_container_width=True):
-    st.session_state.trigger_calc = True
+    st.markdown("")
+    submit_btn = st.form_submit_button("HITUNG ESTIMASI NILAI PROPERTI ──►")
 
 # Logika Prediksi & Hasil
-if st.session_state.trigger_calc:
+if submit_btn:
     input_data = pd.DataFrame([{
         'luas_tanah': luas_tanah,
         'luas_bangunan': luas_bangunan,
