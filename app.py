@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="PropVest AI - Automated Valuation", page_icon="⬡", layout="wide"
 )
 
-# Fungsi untuk memuat background & mengunci gaya CSS
+# Fungsi untuk memuat background & mengunci gaya CSS universal
 def set_background(image_file):
   if os.path.exists(image_file):
     with open(image_file, "rb") as f:
@@ -20,7 +20,7 @@ def set_background(image_file):
             <style>
             /* Background Utama */
             .stApp {{
-                background-image: linear-gradient(rgba(0, 0, 0, 0.80), rgba(0, 0, 0, 0.80)), url("data:image/jpeg;base64,{encoded_string}");
+                background-image: linear-gradient(rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.82)), url("data:image/jpeg;base64,{encoded_string}");
                 background-size: cover;
                 background-position: center;
                 background-repeat: no-repeat;
@@ -28,27 +28,46 @@ def set_background(image_file):
             
             /* Mengunci Sidebar agar tetap gelap pekat */
             [data-testid="stSidebar"] {{
-                background-color: #111827 !important;
+                background-color: #0f172a !important;
             }}
             
-            /* Memaksa semua teks label & paragraf menjadi putih terang */
-            [data-testid="stSidebar"] label, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] div {{
+            /* Paksa seluruh teks di Sidebar menjadi putih */
+            [data-testid="stSidebar"] *, [data-testid="stSidebar"] label, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{
                 color: #ffffff !important;
             }}
+            
+            /* Paksa label form utama menjadi putih */
             .stTextInput label, .stNumberInput label, .stSelectbox label {{
                 color: #ffffff !important;
                 font-weight: 600 !important;
             }}
             
-            /* Paksa tombol form agar selalu memiliki latar belakang gelap dan teks putih */
-            button[kind="secondaryFormSubmit"], button[kind="formSubmit"] {{
-                background-color: #1e3a8a !important;
-                background-image: none !important;
+            /* Paksa SEMUA tombol Streamlit menjadi gelap bergradasi biru dengan teks putih terang */
+            .stButton > button, div.stButton > button, [data-testid="baseButton-secondary"], [data-testid="baseButton-primary"] {{
+                background: #1d4ed8 !important;
+                background-color: #1d4ed8 !important;
                 color: #ffffff !important;
-                border: 1px solid #3b82f6 !important;
+                border: 2px solid #60a5fa !important;
+                font-weight: 700 !important;
+                width: 100% !important;
+                opacity: 1 !important;
             }}
-            button[kind="secondaryFormSubmit"] p, button[kind="formSubmit"] p, button[kind="secondaryFormSubmit"] span, button[kind="formSubmit"] span {{
+            .stButton > button *, div.stButton > button * {{
                 color: #ffffff !important;
+            }}
+            
+            /* Wadah khusus untuk Hasil Analisis agar teksnya dijamin kontras (latar belakang putih terang) */
+            .hasil-analisis-box {{
+                background-color: #ffffff !important;
+                padding: 25px;
+                border-radius: 12px;
+                border: 2px solid #3b82f6;
+                color: #0f172a !important;
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }}
+            .hasil-analisis-box * {{
+                color: #0f172a !important;
             }}
             </style>
             """,
@@ -215,15 +234,25 @@ if submit_btn:
         st.markdown("---")
         render_header("Hasil Analisis Valuasi Pasar", icon_bolt, 22)
         
-        col_res1, col_res2 = st.columns([2, 1])
-        with col_res1:
-            st.metric(
-                label="Estimasi Nilai Likuiditas Properti", 
-                value=f"Rp {prediksi_harga:,.0f}".replace(",", ".")
-            )
-            st.success(f"▪ Kalkulasi untuk **{st.session_state.user_name}** berhasil dieksekusi.")
-        with col_res2:
-            st.info(f"Wilayah: {daerah}\n\nUsia: {usia_bangunan} Tahun\n\nKondisi: {kondisi}")
+        # Bungkus hasil analisis dalam card/box khusus berlatar putih terang agar aman di PC sekolah
+        st.markdown(
+            f"""
+            <div class="hasil-analisis-box">
+                <h3 style="color: #0f172a; margin-top: 0; font-family: sans-serif;">⬡ Estimasi Nilai Likuiditas Properti</h3>
+                <p style="font-size: 1.8rem; font-weight: 800; color: #1d4ed8; margin: 10px 0;">
+                    Rp {prediksi_harga:,.0f}
+                </p>
+                <hr style="border: 0; border-top: 1px solid #cbd5e1; margin: 15px 0;">
+                <p style="color: #334155; font-size: 1rem; margin: 5px 0;">
+                    <b>Status Sesi:</b> Kalkulasi sukses dieksekusi untuk <b>{st.session_state.user_name}</b> ({st.session_state.user_email}).
+                </p>
+                <p style="color: #334155; font-size: 0.95rem; margin: 5px 0;">
+                    <b>Parameter Wilayah:</b> {daerah} | Usia Bangunan: {usia_bangunan} Tahun | Kondisi: {kondisi}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
             
     except Exception as e:
         st.error(f"⬡ [ERROR] Terjadi kesalahan kalkulasi: {e}")
