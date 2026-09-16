@@ -1,8 +1,21 @@
+import os
+import base64
 import streamlit as st
 import pandas as pd
 import joblib
-import os
-import base64
+import streamlit.components.v1 as components
+
+# Pastikan direktori models ada
+os.makedirs('models', exist_ok=True)
+model_path = 'models/model_properti.pkl'
+col_path = 'models/model_columns.pkl'
+
+# Otomatis jalankan training jika file model/kolom belum ada di cloud
+if not os.path.exists(model_path) or not os.path.exists(col_path):
+    try:
+        import train
+    except Exception as e:
+        st.error(f"Gagal melakukan training otomatis: {e}")
 
 # Konfigurasi Halaman
 st.set_page_config(
@@ -32,40 +45,38 @@ def set_background(image_file):
 
 set_background('bg.jpg')
 
-# Helper untuk merender judul dengan ikon heksagon SVG kustom yang dijamin tampil
+# Helper untuk merender header menggunakan st.components.v1.html agar SVG tampil sempurna
 def render_header(title_text, path_d, size=24):
-    html_content = f"""
-    <div style="display: flex; align-items: center; gap: 10px; margin-top: 1rem; margin-bottom: 0.5rem;">
-        <svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    html_code = f"""
+    <div style="display: flex; align-items: center; gap: 10px; margin: 0; padding: 0; background: transparent; font-family: sans-serif;">
+        <svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
             <defs>
                 <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
                 </linearGradient>
             </defs>
-            <!-- Heksagon Luar -->
             <polygon points="12 2 21 7 21 17 12 22 3 17 3 7 12 2" />
-            <!-- Simbol di Dalam -->
             {path_d}
         </svg>
-        <h3 style="margin: 0; color: #ffffff; font-size: 1.25rem; font-weight: 600; font-family: sans-serif;">{title_text}</h3>
+        <span style="color: #ffffff; font-size: 1.15rem; font-weight: 600; letter-spacing: 0.5px;">{title_text}</span>
     </div>
     """
-    st.markdown(html_content, unsafe_allow_html=True)
+    components.html(html_code, height=35, scrolling=False)
 
 # Path SVG untuk ikon di dalam heksagon
 icon_home = '<path d="M9 22V12h6v10M5 10l7-7 7 7"/>'
-icon_gear = '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>'
+icon_gear = '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>'
 icon_db = '<ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>'
 icon_bolt = '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>'
 icon_doc = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>'
 
-# Muat Model Machine Learning
-model_path = 'models/model_properti.pkl'
-if os.path.exists(model_path):
+# Muat Model Machine Learning & Kolom Acuan
+if os.path.exists(model_path) and os.path.exists(col_path):
     model = joblib.load(model_path)
+    model_columns = joblib.load(col_path)
 else:
-    st.error("⬡ [CRITICAL] File model 'models/model_properti.pkl' tidak ditemukan! Jalankan 'python train.py' terlebih dahulu.")
+    st.error("⬡ [CRITICAL] File model atau kolom gagal dimuat.")
     st.stop()
 
 # Sidebar / Panel Konfigurasi Sesi
@@ -136,8 +147,12 @@ if submit_btn:
         'keamanan': keamanan
     }])
     
+    # One-hot encoding input dan sesuaikan kolomnya dengan data training
+    input_encoded = pd.get_dummies(input_data)
+    input_encoded = input_encoded.reindex(columns=model_columns, fill_value=0)
+    
     try:
-        prediksi_harga = model.predict(input_data)[0]
+        prediksi_harga = model.predict(input_encoded)[0]
         
         st.markdown("---")
         render_header("Hasil Analisis Valuasi Pasar", icon_bolt, 22)
