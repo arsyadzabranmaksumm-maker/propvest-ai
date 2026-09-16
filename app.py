@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="PropVest AI - Automated Valuation", page_icon="⬡", layout="wide"
 )
 
-# Fungsi untuk memuat background & mengunci gaya CSS tombol
+# Fungsi untuk memuat background & mengunci gaya CSS
 def set_background(image_file):
   if os.path.exists(image_file):
     with open(image_file, "rb") as f:
@@ -34,6 +34,13 @@ def set_background(image_file):
             /* Paksa seluruh teks di Sidebar menjadi putih */
             [data-testid="stSidebar"] *, [data-testid="stSidebar"] label, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{
                 color: #ffffff !important;
+            }}
+            
+            /* Memperbaiki kotak input teks di Sidebar agar teks yang diketik terlihat (warna putih di atas latar gelap) */
+            [data-testid="stSidebar"] input {{
+                background-color: #1e293b !important;
+                color: #ffffff !important;
+                border: 1px solid #475569 !important;
             }}
             
             /* Paksa label form utama menjadi putih */
@@ -270,4 +277,3 @@ if submit_btn:
             
     except Exception as e:
         st.error(f"⬡ [ERROR] Terjadi kesalahan kalkulasi: {e}")
-    
